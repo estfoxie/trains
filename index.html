@@ -28,128 +28,317 @@
 <link href="style.css" rel="stylesheet">
 
 <script>
+
+</script>
+
+</head>
+<body>
+
+	<nav class="navbar navbar-toggleable-md navbar-inverse bg-inverse fixed-top">
+		<button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+			<span class="navbar-toggle\-icon"></span>
+		</button>
+		<a class="navbar-brand" href="#">Train Composition Viewer</a>
+
+		<div class="collapse navbar-collapse" id="navbarsExampleDefault">
+			<ul class="navbar-nav mr-auto">
+				<li class="nav-item active">
+					<a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" href="#">Link</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link disabled" href="#">Disabled</a>
+				</li>
+				<li class="nav-item dropdown">
+					<a class="nav-link dropdown-toggle" href="http://example.com" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Dropdown</a>
+					<div class="dropdown-menu" aria-labelledby="dropdown01">
+						<a class="dropdown-item" href="#">Action</a>
+						<a class="dropdown-item" href="#">Another action</a>
+						<a class="dropdown-item" href="#">Something else here</a>
+					</div>
+				</li>
+			</ul>
+			<form class="form-inline my-2 my-lg-0">
+				<input class="form-control mr-sm-2" type="text" id="stationSearch" value="HKI" >
+				<button class="btn btn-outline-success my-2 my-sm-0" id=stationSearchButton type="button">Search Station</button>
+			</form>
+		</div>
+	</nav>
+	<div class="container">
+	<div class="" id="Title">
+
+	</div>
+		<div class="row">
+
+		</div>
+	</div>
+	</body>
+
+<script>
 $(function(){
 //siia hakkame asju laduma
-	var trainTyp, trainNumber, trainNum, trainDate, compUrl, x, y;
+	var trainNum, trainDate, compUrl, stationURL;
 	var arr = [];
 	var trainArr = [];
-	var finalArr = [];
 	var sites = [];
 	var wagons = [];
+	var finalArr = [];
+	var u=0;
+	var station="SLO";
+	var x;
+	var y = 0;
+	
+    $('#stationSearchButton').click(function() {
+   		station= $("#stationSearch").val();
+	   	console.log(station);
+	   	$("#Title").empty();
+	   	$(".row").empty();
+        getStation();
+    });	
 
 
-	$.when($.get('https://rata.digitraffic.fi/api/v1/live-trains?station=SLO')).done(function(trainsData) {
+function getStation(){
+
+	var title ="<h1>"+"Trains going through "+station+"</h1><br><br>" ;
+	$("#Title").append(title);
+					
+
+	var URL='https://rata.digitraffic.fi/api/v1/live-trains?station=';
+    //var station= $("#stationSearch").val();
+	//console.log(station);
+
+	stationURL = URL+station ;
+	//console.log(stationURL);
+
+	$.when($.get(stationURL)).done(function(trainsData) {
 	//console.log('data');
 	//console.log(trainsData);
-		for (var i = 0 ; i <= trainsData.length-1; i++) {
+		//console.log('1');
+		sites= [];
+		trainArr= [];
+		finalArr= [];
+		arr = [];
+		for (var i=0 ; i <= trainsData.length-1; i++) {
 			var api='https://rata.digitraffic.fi/api/v1/compositions/';
 			var depDate='?departure_date=';
-			trainTyp=trainsData[i].trainType;
+			//var trainTyp=trainsData[i].trainType;
 			trainNum = trainsData[i].trainNumber;
 			trainDate = trainsData[i].departureDate;
 
 			compUrl=api+trainNum+depDate+trainDate;
-			console.log(compUrl);
+			//console.log(compUrl);
 			sites.push(compUrl);
 
 			//console.log(trainsData[i].trainType);
 			//console.log(trainsData[i].trainNumber);
 			//x = $("<h1></h1>").text(trainTyp+" "+trainNum);
 			//$("body").append(x);
-			arr.push(trainTyp+" "+trainNum);
+			//arr.push(trainTyp+" "+trainNum);
 			trainArr.push(trainNum);
-			console.log(trainArr);
-
-		};
-			
-
-		//$("body").append(trainArr);
+			//console.log(trainArr);
+		}
+		//trainArr.sort();
+		//sites.sort();
+		console.log('2');
 		console.log(sites);
-		console.log(sites.length);
 
-		for (var x=0; x <=sites.length-1; x++){
-			console.log(sites[x]);
-			var compSite = sites[x];
-			$.when($.get(compSite)).done(function(compData){
+		getCompData();
+	//when livetrains lõppeb
+	});
+//getStaion lõppeb
+}
+//$("body").append(trainArr);
+//console.log(sites);
+//console.log(sites.length);
+function getCompData(){
+	//console.log(arr);
+	//console.log(trainArr);
+	//console.log(sites);
+	//console.log('3');
+	
+	for (x=0 ; x <=sites.length-1; x++) {
+		//this.setInterval(100);
 
-			console.log(compData);
-			//var comp= compData.journeySections;
-			for (j in compData.journeySections) {
-				//testing purposes
-				var trainNumber = compData.trainNumber;
+		//console.log(sites[x]);
+		var compSite = sites[x];
+		$.when($.get(compSite)).done(function(compData) {
+			//console.log(compData);
+			//console.log(compData.code);
+				//"COMPOSITION_NOT_FOUND"
+			if (compData.code==="COMPOSITION_NOT_FOUND") {
+
+				//var asd = (compData.errorMessage).replace( /(^.+)(\w\d+\w)(.+$)/i,'$2');
+				//console.log(asd);
+
+				arr.push(compData.errorMessage);
+
+				var errRowStart = '<div class="row">';
+				var errRowEnd = '</div>';
+
+				// mostly for show, need to populate properly
+				/*var largeText = '<div class="col-sm-6"' +
+				          'style="background-color: pink;);">'+
+				          '<h1>'+'EI TÖÖTA'+'</h1>'
+				          '</div>';
+				*/
+					var errorMess = '<div class="col-sm-12"' +
+				          'style="background-color: rgba(100,100,100,0.5););">'+
+				          '<strong>'+"No Composition available for this train"+'</strong>'+
+				          '<p>'+'Error message: '+compData.errorMessage+'</p>'+
+				          '</div>';
+				//var fullErrMess= errRowStart+errorMess+errRowEnd;
+
+				/*var smallText =	'<div class="col-sm-6"' +
+						          'style="background-color: rgba(0,0,220,0.4););">'+
+						          '<h4>'+'EI TÖÖTA'+'</h4>'
+						          '</div>';
 				
+				$(".container").append(errRowStart);
+				//$("#falseRow").append(largeText);
+				$("#falseRow").append(errorMess);
+				//$("#falseRow").append(smallText);
+				$(".container").append(errRowEnd);
+				*/
+				$(".container").append(errorMess);
+				//finalArr.push(fullErrMess);
+				finalArr.push(errorMess);
+			} else {
 
-				var startStation = compData.journeySections[j].beginTimeTableRow.stationShortCode ;
-				var endStation = compData.journeySections[j].endTimeTableRow.stationShortCode ;
-				var locomotive = compData.journeySections[j].locomotives[j].locomotiveType ;
-				var powerT = compData.journeySections[j].locomotives[j].powerType ;
+				//var comp= compData.journeySections;
+				for (var j in compData.journeySections) {
+					//testing purposes
 
-				//mingisugune for tsükkel vagunite jaoks
-				//var wagonsType =  ;
+					var trainType = compData.trainType;
+					var trainNumber = compData.trainNumber;
+					var startStation = compData.journeySections[j].beginTimeTableRow.stationShortCode ;
+					var endStation = compData.journeySections[j].endTimeTableRow.stationShortCode ;
+					var locomotive ="Train Type: "+ compData.journeySections[j].locomotives[j].locomotiveType ;
+					var powerT = compData.journeySections[j].locomotives[j].powerType ;
 
-				 
-				wagons=[];
-				for (k in compData.journeySections[j].wagons){
-					wagons.push(compData.journeySections[j].wagons[k].wagonType);
+					//for tsükkel vagunite jaoks
+					//for cycle for wagons
+					wagons=[];
+					for (var k in compData.journeySections[j].wagons){
+						wagons.push(compData.journeySections[j].wagons[k].wagonType);
+						//console.log(wagons);
+					}
+					var wagonTypes = wagons.join(", ");
+					//console.log(wagonTypes);
+					var vMax = "Top Speed: "+compData.journeySections[j].totalLength+" kmh" ;
+					var locoLength ="Train Length: "+ compData.journeySections[j].maximumSpeed+" m" ;
+					arr.push(trainType+trainNumber+", "+startStation+"-"+endStation+", "+locomotive+", "+powerT+", "+wagonTypes+", "+vMax+", "+locoLength);
 
+					//just for show, need to populate properly
+					var divStart="<div id='TrainInfo' class='col-sm-4'>";
+					var inf =divStart+"<p><strong>"+trainType+trainNumber+" "+startStation+"-"+endStation+"</strong><br>"+locomotive+", "+powerT+"<br>"+"Wagons: "+wagonTypes+"<br>"+locoLength+"<br>"+vMax+"</p>"+
+						"</div>";
+					finalArr.push(inf);
 
-					//console.log(wagons);
-				};
+					//console.log(finalArr);
 
-				var wagonsType = wagons.join(", ");
-				console.log(wagonsType);
+					var rowStart = '<div class="row">';
+					var rowEnd = '</div>';
+					var fullInf=rowStart+inf+rowEnd;
 
-				
-				var vMax = compData.journeySections[j].totalLength+" kmh" ;
-				var locoLength = compData.journeySections[j].maximumSpeed+" m" ;
-
-				//y = $("<p style='text-align: center;'></p>").text(trainNumber+", "+startStation+"-"+endStation+", "+locomotive+", "+powerT+", "+"//wagons should be here//"+", "+vMax+", "+locoLength);
-				//$("body").append(y);
-
-				//yay, we see stuff, but not quite right
-				x = $("<p style='text-align: center;'></p>").text(trainNumber);
-				
-				y = $("<p style='text-align: center;'></p>").text("Route: "+startStation+"-"+endStation);
-
-				z = $("<p style='text-align: center;'></p>").text("Locomotive Type: "+locomotive+", "+powerT+", "+", "+vMax+", "+locoLength);
-				c= $("<p style='text-align: center;'></p>").text("Wagons: "+wagonsType);
-				$("body").append(x);
-				$("body").append(y);
-				$("body").append(z);
-				$("body").append(c);
-
-				/*for (l in wagons){
-				var c= $("<p style='text-align: center;'></p>").text(wagons[l]+", ");
-				$("body").append(c);
+					$(".row").append(inf);
 					
-				}*/
+					/*
+					if (y+1%3==0) {
+						//2,5,8
+						$(".row").append(inf);
+						$(".container").append(rowEnd);
+					} else if(y%3!==0) {
+						//1,4,7
+						$(".row").append(inf);
 
+					} else if (y%3==0) {
+						//0,3,6
+						$(".container").append(rowStart);
+						$(".row").append(inf);
+					}
+					else {
+						$(".row").append("ERROR");
+					}
+					console.log(y);
+					y= y+1;
+					console.log(JSON.stringify(arr));
+					*/
+					
+					
 
-				arr.push(trainNumber+", "+startStation+"-"+endStation+", "+locomotive+", "+powerT+", "+"//wagons should be here//"+", "+vMax+", "+locoLength);
-				console.log(arr);
-
-			
-			};
-			//for lõppeb
-			});
-		//get.compUrl function lõppeb
-		};
-
-
-
-
-
-
-
-
-
-		//when get function lõppeb
+				// forcompdata.journeysection lõppeb
+				}
+			// if/else lõppeb
+			}
+		//get.compSite lõppeb
+		//populatePage();
 		});
+
+	//for get.compSite function lõppeb
+	
+	}
+	//console.log("oma funktsioonis");
+	console.log(finalArr);
+	
+	console.log(trainArr);
+	console.log(JSON.stringify(arr));
+	//console.log(arr);
+	//console.log(finalArr);
+
+//getCompData lõppeb
+
+}
+
+
+//if (finalArr.length==10) {console.log("on 10")}
+//else {console.log("ei ole 10")}
+
+/*
+function populatePage(){
+	console.log('4');
+	console.log(finalArr);
+	var rowStart = '<div id="TrainInfo" class="row">';
+	var rowEnd = '</div>';
+
+	console.log(u);
 	
 
+	var a = finalArr[u];
+	console.log(a);
+	var b = rowStart+a+rowEnd;
 
+	$(".container").append(b);
+	u++;
+}
+*/
 
-//get function lõppeb
+/*getStation();
+$.when(getStation()).done(function(qwe){
+getCompData();
+console.log(trainArr);
+console.log(arr);
+});
+
+*/
+/*
+$.when(start()).done(function(data) {
+
+	console.log(trainArr);
+	console.log(arr);
+	for (var s=0 ; s <=arr.length-1; s++) {
+		var value = arr[s];
+		console.log(value);
+		$(".container").append(value);
+		//Things[i]
+	}
+});
+*/
+getStation();
+//function lõppeb
+});
+
 	
 		/*
 		rongid arraysse
@@ -195,50 +384,8 @@ console.log(compData);
 
 // response data can be gotten with contest[2].responseText
 	
-	//comp $get lõppeb
 
-//function lõppeb
-});		
+
 </script>
 
-</head>
-<body>
-
-<nav class="navbar navbar-toggleable-md navbar-inverse bg-inverse fixed-top">
-<button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
-<span class="navbar-toggler-icon"></span>
-</button>
-<a class="navbar-brand" href="#">Train Composition Viewer</a>
-
-<div class="collapse navbar-collapse" id="navbarsExampleDefault">
-<ul class="navbar-nav mr-auto">
-<li class="nav-item active">
-<a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
-</li>
-<li class="nav-item">
-<a class="nav-link" href="#">Link</a>
-</li>
-<li class="nav-item">
-<a class="nav-link disabled" href="#">Disabled</a>
-</li>
-<li class="nav-item dropdown">
-<a class="nav-link dropdown-toggle" href="http://example.com" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Dropdown</a>
-<div class="dropdown-menu" aria-labelledby="dropdown01">
-<a class="dropdown-item" href="#">Action</a>
-<a class="dropdown-item" href="#">Another action</a>
-<a class="dropdown-item" href="#">Something else here</a>
-</div>
-</li>
-</ul>
-<form class="form-inline my-2 my-lg-0">
-<input class="form-control mr-sm-2" type="text" placeholder="Search">
-<button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-</form>
-</div>
-</nav>
-<div class="container">
-
-
-</div>
-</body>
 </html>
